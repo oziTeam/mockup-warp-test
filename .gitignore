@@ -1,1 +1,6 @@
 *.npy
+*.pyc
+venv
+.idea/
+.vscode/
+*/.idea
