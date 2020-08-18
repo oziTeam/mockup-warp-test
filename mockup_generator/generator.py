@@ -17,11 +17,12 @@ class Mockup3DGenerator:
     def do_generate(self):
         for side in self.mockup_data:
             start = time.time()
-            main_side_image = Image.new("RGBA", (1000, 1000), (255, 255, 255))
+            main_side_image = Image.new("RGBA", (1000, 1000), (255, 255, 255, 255))
             for part in side['parts']:
                 artwork_image = Image.open(self.artwork_data[part['artwork_side']]).convert("RGBA")
                 artwork_image = np.array(artwork_image)
-                open_cv_artwork_image = cv2.cvtColor(artwork_image, cv2.COLOR_RGB2BGR)
+                # open_cv_artwork_image = cv2.cvtColor(artwork_image, cv2.COLOR_RGB2BGR)
+                open_cv_artwork_image = artwork_image
 
                 # warp_artwork_image_name = "{}{}{}".format(prefix_name, SPLIT_CHAR, part.get("name"))
                 # print("Doing warp...")
@@ -32,13 +33,18 @@ class Mockup3DGenerator:
 
                     mapx, mapy = tps.tps_grid_to_remap(grid, contants.shape)
                     img = cv2.remap(resized_img, mapx, mapy, cv2.INTER_CUBIC)
-                    img = cv2.cvtColor(img, cv2.COLOR_BGRA2RGBA)
+                    # img = cv2.cvtColor(img, cv2.COLOR_BGRA2RGBA)
                     warped = Image.fromarray(img).convert("RGBA")
 
                     cut_image = Image.open(part['cut_image_path']).convert("RGBA")
-                    out = Image.composite(cut_image, warped, cut_image)
+                    # cut_image = Image.new(mode="RGBA", size=(1000, 1000), color=(0, 0, 0, 0))
 
-                    main_side_image = ImageChops.darker(out, main_side_image)
+                    # out = Image.composite(cut_image, warped, cut_image)
+                    # main_side_image = ImageChops.darker(out, main_side_image)
+
+                    warped.paste(cut_image, None, cut_image)
+                    main_side_image = ImageChops.darker(warped, main_side_image)
+
                     # main_side_image = main_side_image.resize(main_side_image.size, Image.ANTIALIAS)
 
 
@@ -48,4 +54,7 @@ class Mockup3DGenerator:
             end = time.time()
             print('[{:.4f} s] Generate mockup for {} executed'.format((end - start), side['side_name']))
 
-            main_side_image.show()
+            main_side_image.save("./out/{}.png".format(side['side_name']), format="PNG")
+            main_side_image.convert("RGB").save("./out/{}.jpg".format(side['side_name']), format="JPEG", subsampling=0, quality=90)
+
+            # main_side_image.show()
