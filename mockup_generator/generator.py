@@ -8,6 +8,17 @@ from PIL import Image, ImageChops
 from warp_image import thinplate as tps, contants
 
 
+# def convert_to_srgb(img):
+#     '''Convert PIL image to sRGB color space (if possible)'''
+#     icc = img.info.get('icc_profile', '')
+#     if icc:
+#         io_handle = io.BytesIO(icc)  # virtual file
+#         src_profile = ImageCms.ImageCmsProfile(io_handle)
+#         dst_profile = ImageCms.createProfile('sRGB')
+#         img = ImageCms.profileToProfile(img, src_profile, dst_profile)
+#     return img
+
+
 class Mockup3DGenerator:
     def __init__(self, mockup_data, artwork_data, colors="#333333"):
         self.mockup_data = mockup_data
@@ -39,11 +50,11 @@ class Mockup3DGenerator:
                     cut_image = Image.open(part['cut_image_path']).convert("RGBA")
                     # cut_image = Image.new(mode="RGBA", size=(1000, 1000), color=(0, 0, 0, 0))
 
-                    # out = Image.composite(cut_image, warped, cut_image)
-                    # main_side_image = ImageChops.darker(out, main_side_image)
+                    out = Image.composite(cut_image, warped, cut_image)
+                    main_side_image = ImageChops.darker(out, main_side_image)
 
-                    warped.paste(cut_image, None, cut_image)
-                    main_side_image = ImageChops.darker(warped, main_side_image)
+                    # warped.paste(cut_image, None, cut_image)
+                    # main_side_image = ImageChops.darker(warped, main_side_image)
 
                     # main_side_image = main_side_image.resize(main_side_image.size, Image.ANTIALIAS)
 
@@ -55,6 +66,21 @@ class Mockup3DGenerator:
             print('[{:.4f} s] Generate mockup for {} executed'.format((end - start), side['side_name']))
 
             main_side_image.save("./out/{}.png".format(side['side_name']), format="PNG")
-            main_side_image.convert("RGB").save("./out/{}.jpg".format(side['side_name']), format="JPEG", subsampling=0, quality=90)
+
+            # main_side_image = main_side_image.convert("RGB")
+            # main_side_image = ImageCms.profileToProfile(main_side_image, './USWebCoatedSWOP.icc', './sRGB Color Space Profile.icm',
+            #                                 renderingIntent=0, outputMode='RGB')
+
+            main_side_image.convert("RGB").save("./out/{}.jpg".format(side['side_name']), format="JPEG", subsampling=0,
+                                                quality=90)
+
+            # img_conv = convert_to_srgb(main_side_image)
+            # print(dir(main_side_image))
+            # if main_side_image.info.get('icc_profile', '') != img_conv.info.get('icc_profile', ''):
+            #     # ICC profile was changed -> save converted file
+            #     img_conv.save("./out/{}.jpg".format(side['side_name']),
+            #                   format='JPEG',
+            #                   quality=100,
+            #                   icc_profile=img_conv.info.get('icc_profile', ''))
 
             # main_side_image.show()

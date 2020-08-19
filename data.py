@@ -83,7 +83,7 @@
 
 
 ARTWORK_DATA = {
-    "Front": "./sample_data/artworks/mask-3.jpg",
+    "Front": "./sample_data/artworks/fushion-mask.jpeg",
     "Adult": "./sample_data/artworks/mask-4.jpeg",
 }
 
